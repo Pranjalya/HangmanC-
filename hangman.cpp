@@ -7,8 +7,31 @@
 #include <cstdlib>
 #include <limits> // for numeric_limits
 #include <unistd.h> // for usleep (provides a delay similar to getch)
+#include <termios.h>
 
 using namespace std;
+
+char getch(void)
+{
+    char buf = 0;
+    struct termios old = {0};
+    fflush(stdout);
+    if(tcgetattr(0, &old) < 0)
+        perror("tcsetattr()");
+    old.c_lflag &= ~ICANON;
+    old.c_lflag &= ~ECHO;
+    old.c_cc[VMIN] = 1;
+    old.c_cc[VTIME] = 0;
+    if(tcsetattr(0, TCSANOW, &old) < 0)
+        perror("tcsetattr ICANON");
+    if(read(0, &buf, 1) < 0)
+        perror("read()");
+    old.c_lflag |= ICANON;
+    old.c_lflag |= ECHO;
+    if(tcsetattr(0, TCSADRAIN, &old) < 0)
+        perror("tcsetattr ~ICANON");
+    return buf;
+}
 
 void gotoxy(int x, int y) {
     printf("\033[%d;%dH", y, x);
@@ -142,9 +165,9 @@ void Scor::getdet() {
         if (cin.fail() || cin.peek() != '\n') {
             cout << "\nInvalid input. Please enter a number.\n";
             cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else {
-            break; 
+            break;
         }
     }
     cout << "\nPlease enter your first name : ";
@@ -169,9 +192,9 @@ void Scor::getdet() {
         if (cin.fail() || cin.peek() != '\n') {
             cout << "\nInvalid input. Please enter a number.\n";
             cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else {
-            break; 
+            break;
         }
     }
 }
@@ -239,7 +262,7 @@ void Help() {
     cout << "\n\n\n6. There are three difficulty levels, EASY (10 points for correct movie), AVERAGE (20 points for correct movie) and HARD (30 points for correct movie), each where score is points times number of guesses left. You get 0 points for each wrong answer.";
     cout << "\n\n\n\n\tSo, it is simple, play and enjoy. Press any key to go back.";
     usleep(500000); // Pause for 0.5 seconds
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get(); // Wait for any key press
 }
 
@@ -274,7 +297,7 @@ void Entry(int sco) {
     s.sc = sco;
     file.write((char*)&s, sizeof(s));
     file.close();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get();
 }
 
@@ -299,7 +322,7 @@ void Hangman() {
             if (cin.fail() || cin.peek() != '\n') {
                 cout << "\tERROR: Invalid input. Please enter 1, 2, or 3.\n";
                 cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             } else {
                 break;
             }
@@ -402,9 +425,9 @@ void search() {
         if (cin.fail() || cin.peek() != '\n') {
             cout << "\nInvalid input. Please enter a number.\n";
             cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else {
-            break; 
+            break;
         }
     }
     file.open("Score.dat", ios::in | ios::binary);
@@ -423,7 +446,7 @@ void search() {
         cout << "\nID not found";
     }
     file.close();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get();
 }
 
@@ -442,9 +465,9 @@ void delet() {
         if (cin.fail() || cin.peek() != '\n') {
             cout << "\nInvalid input. Please enter a number.\n";
             cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else {
-            break; 
+            break;
         }
     }
 
@@ -474,7 +497,7 @@ void delet() {
     fout.close();
     remove("Score.dat");
     rename("temp.dat", "Score.dat");
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get();
 }
 
@@ -493,9 +516,9 @@ void modif() {
         if (cin.fail() || cin.peek() != '\n') {
             cout << "\nInvalid input. Please enter a number.\n";
             cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else {
-            break; 
+            break;
         }
     }
 
@@ -516,7 +539,7 @@ void modif() {
         }
     }
     file.close();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get();
 }
 
@@ -537,18 +560,18 @@ void Score() {
     cout << "\n\n6. Clear all Scores";
     cout << "\n\n   Any other key to go back.";
     cout << "\n\nPlease enter your choice : ";
-    
+
     while (true) {
         cin >> op;
         if (cin.fail() || cin.peek() != '\n') {
             cout << "\nInvalid input. Please enter a number.\n";
             cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else {
-            break; 
+            break;
         }
     }
-    
+
     switch (op) {
         case 1:
             search();
@@ -573,7 +596,7 @@ void Score() {
                 s.showdet();
             }
             f.close();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cin.get();
             break;
         case 6:
@@ -608,9 +631,9 @@ preview:
         if (cin.fail() || cin.peek() != '\n') {
             cout << "\nInvalid input. Please enter a number.\n";
             cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else {
-            break; 
+            break;
         }
     }
 
@@ -632,11 +655,11 @@ preview:
             break;
         default:
             cout << "\n\nWrong Choice. Let's start again. Press any key to do so.";
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cin.get();
             goto preview;
     }
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get();
     return 0;
 }
